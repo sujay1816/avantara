@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown } from 'lucide-react'
-import config from '../../../../config.json'
+import config from '@/config.json'
 
 interface NavbarProps {
   cartCount?: number

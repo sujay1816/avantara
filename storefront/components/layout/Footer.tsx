@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Instagram, Facebook, Youtube } from 'lucide-react'
-import config from '../../../../config.json'
+import config from '@/config.json'
 
 export default function Footer() {
   const [email, setEmail] = useState('')

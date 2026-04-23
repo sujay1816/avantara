@@ -1,7 +1,7 @@
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
-import config from '../../../../config.json'
+import config from '@/config.json'
 
 export default function PolicyPage() {
   return (

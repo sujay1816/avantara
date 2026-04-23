@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, ArrowRight } from 'lucide-react'
-import config from '../../../../config.json'
+import config from '@/config.json'
 
 type Mode = 'login' | 'signup'
 

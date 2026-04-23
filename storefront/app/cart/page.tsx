@@ -8,7 +8,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import { formatPrice } from '@/lib/config'
-import config from '../../../../config.json'
+import config from '@/config.json'
 
 const INITIAL_CART = [
   { productId: 'p1', productName: 'Kanjivaram Pure Silk Saree', productImage: '', colour: 'Royal Blue', colourHex: '#1A3A6B', originalPrice: 18999, salePrice: 14999, quantity: 1, stock: 3 },

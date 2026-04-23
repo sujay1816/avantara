@@ -1,4 +1,4 @@
-import config from '../../config.json'
+import config from '@/config.json'
 import type { SiteConfig } from '@/types'
 
 // Load config from config.json — all white-label settings live here

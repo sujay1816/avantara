@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import config from '../../../../config.json'
+import config from '@/config.json'
 
 export default function WhatsAppButton() {
   const url = `https://wa.me/${config.contact.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(config.contact.whatsappMessage)}`

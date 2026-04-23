@@ -8,7 +8,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import ProductCard from '@/components/product/ProductCard'
-import config from '../../../../config.json'
+import config from '@/config.json'
 
 const COLOURS = ['Royal Blue', 'Crimson Red', 'Emerald Green', 'Deep Purple', 'Ivory White', 'Rose Pink', 'Midnight Black', 'Golden Yellow']
 const OCCASIONS = ['Wedding', 'Festive', 'Casual', 'Office', 'Party', 'Religious']

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import config from '../../config.json'
+import config from '@/config.json'
 
 export const metadata: Metadata = {
   title: config.seo.defaultTitle,

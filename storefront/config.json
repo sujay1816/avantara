@@ -1,0 +1,148 @@
+{
+  "brand": {
+    "name": "Avantara",
+    "tagline": "Draped in Elegance",
+    "logoType": "both",
+    "logoText": "Avantara",
+    "logoImageUrl": "/images/logo.png",
+    "faviconUrl": "/images/favicon.ico"
+  },
+
+  "theme": {
+    "primaryColor": "#F5EDE3",
+    "accentColor": "#C9956C",
+    "accentDark": "#A6774E",
+    "textPrimary": "#1A1A1A",
+    "textSecondary": "#6B6B6B",
+    "backgroundPrimary": "#FDFAF7",
+    "backgroundSecondary": "#F5EDE3",
+    "borderColor": "#E8DDD4",
+    "fontHeading": "Cormorant Garamond",
+    "fontBody": "DM Sans",
+    "fontHeadingUrl": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap",
+    "fontBodyUrl": "https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap"
+  },
+
+  "store": {
+    "currency": "INR",
+    "currencySymbol": "₹",
+    "language": "en",
+    "country": "IN",
+    "timezone": "Asia/Kolkata"
+  },
+
+  "categories": [
+    { "id": "silk", "label": "Silk Sarees", "slug": "silk-sarees" },
+    { "id": "cotton", "label": "Cotton Sarees", "slug": "cotton-sarees" },
+    { "id": "designer", "label": "Designer Sarees", "slug": "designer-sarees" },
+    { "id": "bridal", "label": "Bridal Sarees", "slug": "bridal-sarees" },
+    { "id": "casual", "label": "Casual Sarees", "slug": "casual-sarees" }
+  ],
+
+  "homepage": {
+    "heroBannerVideoUrl": "/videos/hero.mp4",
+    "heroBannerFallbackImage": "/images/hero-fallback.jpg",
+    "heroHeading": "Draped in Elegance",
+    "heroSubheading": "Discover timeless sarees crafted for the modern woman",
+    "heroCTALabel": "Shop Now",
+    "heroCTAUrl": "/shop",
+    "sections": [
+      { "id": "newArrivals", "visible": true, "order": 1, "heading": "New Arrivals" },
+      { "id": "bestsellers", "visible": true, "order": 2, "heading": "Bestsellers" },
+      { "id": "featuredCollection", "visible": true, "order": 3, "heading": "Featured Collection" }
+    ]
+  },
+
+  "contact": {
+    "whatsappNumber": "+919999999999",
+    "whatsappMessage": "Hi! I need help with my order on Avantara.",
+    "supportEmail": "support@avantara.in",
+    "businessEmail": "hello@avantara.in"
+  },
+
+  "social": {
+    "instagram": "https://instagram.com/avantara",
+    "facebook": "https://facebook.com/avantara",
+    "pinterest": "https://pinterest.com/avantara",
+    "youtube": ""
+  },
+
+  "footer": {
+    "showNewsletter": true,
+    "newsletterHeading": "Join the Avantara Circle",
+    "newsletterSubtext": "Get early access to new arrivals, exclusive offers and styling tips.",
+    "links": [
+      {
+        "heading": "Shop",
+        "items": [
+          { "label": "New Arrivals", "url": "/shop?filter=new" },
+          { "label": "Bestsellers", "url": "/shop?filter=bestsellers" },
+          { "label": "Silk Sarees", "url": "/shop/silk-sarees" },
+          { "label": "Bridal Sarees", "url": "/shop/bridal-sarees" }
+        ]
+      },
+      {
+        "heading": "Help",
+        "items": [
+          { "label": "FAQ", "url": "/faq" },
+          { "label": "Shipping Info", "url": "/shipping" },
+          { "label": "Return & Refund", "url": "/policy" },
+          { "label": "Track Order", "url": "/orders" }
+        ]
+      },
+      {
+        "heading": "Company",
+        "items": [
+          { "label": "About Us", "url": "/about" },
+          { "label": "Contact", "url": "/contact" },
+          { "label": "Privacy Policy", "url": "/privacy" },
+          { "label": "Terms of Service", "url": "/terms" }
+        ]
+      }
+    ],
+    "copyrightText": "© 2025 Avantara. All rights reserved."
+  },
+
+  "seo": {
+    "defaultTitle": "Avantara — Draped in Elegance",
+    "defaultDescription": "Shop the finest sarees online. Silk, Cotton, Designer, Bridal and Casual sarees for every occasion.",
+    "defaultKeywords": "sarees, silk sarees, cotton sarees, bridal sarees, designer sarees, buy sarees online",
+    "ogImageUrl": "/images/og-image.jpg",
+    "twitterHandle": "@avantara"
+  },
+
+  "shipping": {
+    "freeShippingAbove": 1999,
+    "defaultShippingCharge": 99,
+    "estimatedDeliveryDays": "5-7"
+  },
+
+  "gst": {
+    "businessName": "Avantara Fashion Pvt Ltd",
+    "gstin": "YOUR_GSTIN_HERE",
+    "address": "Your Business Address Here",
+    "defaultGstRate": 5
+  },
+
+  "payments": {
+    "razorpayEnabled": true,
+    "codEnabled": true,
+    "upiEnabled": true
+  },
+
+  "reviews": {
+    "enabled": true,
+    "autoPublish": true,
+    "allowedAfterPurchase": true
+  },
+
+  "features": {
+    "wishlist": true,
+    "productReviews": true,
+    "pincodeCheck": true,
+    "relatedProducts": true,
+    "newsletterSignup": true,
+    "returnRequests": true,
+    "lowStockThreshold": 5
+  }
+}
