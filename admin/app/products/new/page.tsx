@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Check, Upload, X, Plus, Trash2 } from 'lucide-react'
@@ -16,7 +16,7 @@ const STEPS = [
   { id: 5, label: 'SEO' },
 ]
 
-const CATEGORIES = [
+const STATIC_CATEGORIES = [
   { id: 'silk-sarees', label: 'Silk Sarees' },
   { id: 'cotton-sarees', label: 'Cotton Sarees' },
   { id: 'designer-sarees', label: 'Designer Sarees' },
@@ -54,10 +54,20 @@ export default function AddProductPage() {
     customFields: [] as { key: string; value: string }[],
   })
 
+  const [categories, setCategories] = useState<{id: string, label: string, slug: string}[]>([])
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data } = await supabase.from('categories').select('id, slug, label').order('order_index')
+      if (data) setCategories(data)
+    }
+    fetchCategories()
+  }, [])
 
   const updateForm = (key: string, value: any) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -109,7 +119,7 @@ export default function AddProductPage() {
     if (!validateStep()) return
     setSaving(true)
     try {
-      const { data: categoryData } = await supabase.from('categories').select('id').eq('slug', form.categoryId).single()
+      const categoryData = categories.find(c => c.id === form.categoryId)
       const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now()
 
       const { data: product, error } = await supabase.from('products').insert({
@@ -223,7 +233,7 @@ export default function AddProductPage() {
                       <select value={form.categoryId} onChange={e => updateForm('categoryId', e.target.value)}
                         className={inputClass} style={{ borderColor: errors.categoryId ? '#EF4444' : '#E5E7EB' }}>
                         <option value="">Select category</option>
-                        {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                        {categories.length > 0 ? categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>) : STATIC_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                       </select>
                       {errors.categoryId && <p className="text-xs text-red-500 mt-1">{errors.categoryId}</p>}
                     </div>
