@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
-const brandName = process.env.NEXT_PUBLIC_BRAND_NAME || 'Avantara'
-
 export const metadata: Metadata = {
-  title: `${brandName} Admin`,
-  description: `${brandName} Admin Panel`,
+  title: `${process.env.NEXT_PUBLIC_BRAND_NAME || 'Avantara'} Admin`,
+  description: 'Admin Panel',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
