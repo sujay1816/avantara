@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Package, MapPin, Heart, Settings, LogOut, ChevronRight, Camera } from 'lucide-react'
@@ -20,42 +20,78 @@ const TABS = [
   { id: 'settings' as Tab, label: 'Account Settings', icon: Settings },
 ]
 
-const ORDERS = [
-  { id: 'o1', orderNumber: 'AVT123456', date: '2025-03-15', status: 'delivered', total: 28873, items: 2 },
-  { id: 'o2', orderNumber: 'AVT789012', date: '2025-02-28', status: 'shipped', total: 14999, items: 1 },
-  { id: 'o3', orderNumber: 'AVT345678', date: '2025-01-10', status: 'placed', total: 9999, items: 1 },
-]
-
 const STATUS_COLORS: Record<string, string> = {
   placed: '#C9956C',
   confirmed: '#1A3A6B',
   shipped: '#1B7A3E',
   delivered: '#1B7A3E',
   cancelled: '#C0392B',
-  return_requested: '#C9956C',
 }
-
-const ADDRESSES = [
-  { id: 'a1', fullName: 'Priya Sharma', phone: '9876543210', addressLine1: '42, Rose Garden', addressLine2: 'Koramangala', city: 'Bengaluru', state: 'Karnataka', pincode: '560034', isDefault: true },
-]
-
-const WISHLIST = [
-  { id: 'w1', name: 'Kanjivaram Pure Silk', price: 14999, slug: 'kanjivaram-pure-silk-saree', colourHex: '#1A3A6B' },
-  { id: 'w2', name: 'Chanderi Cotton Saree', price: 3499, slug: 'chanderi-cotton-saree', colourHex: '#F5F0E8' },
-]
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<Tab>('orders')
-  const [user] = useState({ fullName: 'Priya Sharma', email: 'priya@example.com', phone: '9876543210' })
-  const [form, setForm] = useState({ fullName: user.fullName, phone: user.phone })
+  const [user, setUser] = useState<{ fullName: string; email: string; phone: string } | null>(null)
+  const [form, setForm] = useState({ fullName: '', phone: '' })
   const [saved, setSaved] = useState(false)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!authUser) { router.push('/login'); return }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single()
+
+      if (profile) {
+        setUser({
+          fullName: profile.full_name || '',
+          email: profile.email || authUser.email || '',
+          phone: profile.phone || '',
+        })
+        setForm({
+          fullName: profile.full_name || '',
+          phone: profile.phone || '',
+        })
+      }
+      setLoading(false)
+    }
+    getUser()
+  }, [])
 
   const handleSignOut = async () => {
-    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
     router.refresh()
+  }
+
+  const handleSave = async () => {
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    if (!authUser) return
+    await supabase.from('profiles').update({
+      full_name: form.fullName,
+      phone: form.phone,
+    }).eq('id', authUser.id)
+    setUser(prev => prev ? { ...prev, fullName: form.fullName, phone: form.phone } : null)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="page-container py-20 text-center">
+          <p style={{ color: 'var(--color-text-secondary)' }}>Loading...</p>
+        </div>
+        <Footer />
+      </>
+    )
   }
 
   return (
@@ -68,15 +104,11 @@ export default function ProfilePage() {
               <div className="relative w-16 h-16 mx-auto mb-3">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-medium"
                   style={{ background: 'var(--color-accent)' }}>
-                  {user.fullName.charAt(0)}
+                  {user?.fullName?.charAt(0) || user?.email?.charAt(0) || 'U'}
                 </div>
-                <button className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center border-2 border-white"
-                  style={{ background: 'var(--color-text-primary)', color: 'white' }}>
-                  <Camera size={10} />
-                </button>
               </div>
-              <p className="font-medium text-sm">{user.fullName}</p>
-              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{user.email}</p>
+              <p className="font-medium text-sm">{user?.fullName || 'My Account'}</p>
+              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{user?.email}</p>
             </div>
 
             <div className="border" style={{ borderColor: 'var(--color-border)' }}>
@@ -96,8 +128,7 @@ export default function ProfilePage() {
                   </button>
                 )
               })}
-              <button
-                onClick={handleSignOut}
+              <button onClick={handleSignOut}
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors border-t"
                 style={{ borderColor: 'var(--color-border)', color: '#C0392B' }}>
                 <LogOut size={15} />
@@ -111,56 +142,12 @@ export default function ProfilePage() {
               {activeTab === 'orders' && (
                 <motion.div key="orders" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                   <h2 className="text-2xl font-light mb-6" style={{ fontFamily: 'var(--font-heading)' }}>My Orders</h2>
-                  <div className="space-y-3">
-                    {ORDERS.map(order => (
-                      <div key={order.id} className="border p-4" style={{ borderColor: 'var(--color-border)' }}>
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <p className="text-sm font-medium">Order #{order.orderNumber}</p>
-                            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                              {new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </p>
-                          </div>
-                          <span className="text-xs font-medium px-2 py-1 capitalize"
-                            style={{ background: `${STATUS_COLORS[order.status]}15`, color: STATUS_COLORS[order.status] }}>
-                            {order.status.replace('_', ' ')}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                            {order.items} {order.items === 1 ? 'item' : 'items'} · {formatPrice(order.total)}
-                          </p>
-                          <div className="flex gap-2">
-                            <Link href={`/orders/${order.id}`} className="text-xs btn-outline" style={{ padding: '4px 10px' }}>
-                              View Details
-                            </Link>
-                            {order.status === 'delivered' && (
-                              <button className="text-xs btn-outline" style={{ padding: '4px 10px', color: '#C0392B', borderColor: '#C0392B' }}>
-                                Return
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t flex gap-0" style={{ borderColor: 'var(--color-border)' }}>
-                          {['placed', 'shipped', 'delivered'].map((s, i) => {
-                            const statusIndex = ['placed', 'shipped', 'delivered'].indexOf(order.status)
-                            const isActive = i <= statusIndex
-                            return (
-                              <div key={s} className="flex-1 flex flex-col items-center gap-1">
-                                <div className="w-full flex items-center">
-                                  {i > 0 && <div className="flex-1 h-0.5" style={{ background: isActive ? 'var(--color-accent)' : 'var(--color-border)' }} />}
-                                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: isActive ? 'var(--color-accent)' : 'var(--color-border)' }} />
-                                  {i < 2 && <div className="flex-1 h-0.5" style={{ background: i < statusIndex ? 'var(--color-accent)' : 'var(--color-border)' }} />}
-                                </div>
-                                <span className="text-xs capitalize" style={{ color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>
-                                  {s}
-                                </span>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="text-center py-12 border" style={{ borderColor: 'var(--color-border)' }}>
+                    <Package size={48} className="mx-auto mb-4" style={{ color: 'var(--color-border)' }} />
+                    <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+                      No orders yet. Start shopping!
+                    </p>
+                    <Link href="/shop" className="btn-primary inline-flex">Shop Now</Link>
                   </div>
                 </motion.div>
               )}
@@ -168,47 +155,21 @@ export default function ProfilePage() {
               {activeTab === 'addresses' && (
                 <motion.div key="addresses" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                   <h2 className="text-2xl font-light mb-6" style={{ fontFamily: 'var(--font-heading)' }}>Saved Addresses</h2>
-                  <div className="space-y-3 mb-4">
-                    {ADDRESSES.map(addr => (
-                      <div key={addr.id} className="p-4 border" style={{ borderColor: 'var(--color-border)' }}>
-                        <div className="flex justify-between mb-2">
-                          <p className="text-sm font-medium">{addr.fullName}</p>
-                          {addr.isDefault && <span className="text-xs px-2 py-0.5" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-accent)' }}>Default</span>}
-                        </div>
-                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{addr.addressLine1}, {addr.addressLine2}</p>
-                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{addr.city}, {addr.state} — {addr.pincode}</p>
-                        <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>+91 {addr.phone}</p>
-                        <div className="flex gap-2">
-                          <button className="btn-outline" style={{ padding: '4px 12px', fontSize: 11 }}>Edit</button>
-                          <button className="btn-outline" style={{ padding: '4px 12px', fontSize: 11, color: '#C0392B', borderColor: '#C0392B' }}>Remove</button>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="text-center py-12 border" style={{ borderColor: 'var(--color-border)' }}>
+                    <MapPin size={48} className="mx-auto mb-4" style={{ color: 'var(--color-border)' }} />
+                    <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>No addresses saved yet.</p>
+                    <button className="btn-primary">+ Add New Address</button>
                   </div>
-                  <button className="btn-primary">+ Add New Address</button>
                 </motion.div>
               )}
 
               {activeTab === 'wishlist' && (
                 <motion.div key="wishlist" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                   <h2 className="text-2xl font-light mb-6" style={{ fontFamily: 'var(--font-heading)' }}>Saved Items</h2>
-                  <div className="space-y-3">
-                    {WISHLIST.map(item => (
-                      <div key={item.id} className="flex gap-3 p-4 border" style={{ borderColor: 'var(--color-border)' }}>
-                        <div className="w-14 h-20 flex-shrink-0 flex items-center justify-center" style={{ background: 'var(--color-bg-secondary)' }}>
-                          <div className="w-6 h-8" style={{ background: item.colourHex, opacity: 0.7 }} />
-                        </div>
-                        <div className="flex-1">
-                          <Link href={`/product/${item.slug}`}>
-                            <p className="text-sm hover:underline" style={{ fontFamily: 'var(--font-heading)', fontSize: 16 }}>{item.name}</p>
-                          </Link>
-                          <p className="text-sm mt-1 font-medium">{formatPrice(item.price)}</p>
-                          <Link href={`/product/${item.slug}`} className="btn-primary mt-2 inline-flex" style={{ padding: '6px 14px', fontSize: 11 }}>
-                            View Product
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="text-center py-12 border" style={{ borderColor: 'var(--color-border)' }}>
+                    <Heart size={48} className="mx-auto mb-4" style={{ color: 'var(--color-border)' }} />
+                    <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>Your wishlist is empty.</p>
+                    <Link href="/shop" className="btn-primary inline-flex">Browse Sarees</Link>
                   </div>
                 </motion.div>
               )}
@@ -219,18 +180,30 @@ export default function ProfilePage() {
                   <div className="space-y-4 max-w-md">
                     <div>
                       <label className="text-xs mb-1 block" style={{ color: 'var(--color-text-secondary)' }}>Full Name</label>
-                      <input type="text" value={form.fullName} onChange={e => setForm(p => ({ ...p, fullName: e.target.value }))} className="input-base" />
+                      <input type="text" value={form.fullName}
+                        onChange={e => setForm(p => ({ ...p, fullName: e.target.value }))}
+                        className="input-base" />
                     </div>
                     <div>
                       <label className="text-xs mb-1 block" style={{ color: 'var(--color-text-secondary)' }}>Email Address</label>
-                      <input type="email" value={user.email} disabled className="input-base opacity-60 cursor-not-allowed" />
+                      <input type="email" value={user?.email || ''} disabled
+                        className="input-base opacity-60 cursor-not-allowed" />
+                      <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>Email cannot be changed.</p>
                     </div>
                     <div>
                       <label className="text-xs mb-1 block" style={{ color: 'var(--color-text-secondary)' }}>Phone Number</label>
-                      <input type="tel" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="input-base" />
+                      <input type="tel" value={form.phone}
+                        onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
+                        placeholder="+91 XXXXX XXXXX"
+                        className="input-base" />
                     </div>
-                    {saved && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs" style={{ color: '#1B7A3E' }}>✓ Changes saved!</motion.p>}
-                    <button className="btn-primary" onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 3000) }}>Save Changes</button>
+                    {saved && (
+                      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                        className="text-xs" style={{ color: '#1B7A3E' }}>
+                        ✓ Changes saved successfully!
+                      </motion.p>
+                    )}
+                    <button className="btn-primary" onClick={handleSave}>Save Changes</button>
                   </div>
                 </motion.div>
               )}
