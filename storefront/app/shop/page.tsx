@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import ShopContent from './ShopContent'
 import { getProducts } from '@/lib/supabase/products'
+export const dynamic = 'force-dynamic'
 
 export default async function ShopPage() {
   const products = await getProducts()
