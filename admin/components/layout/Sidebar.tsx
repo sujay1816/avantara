@@ -38,7 +38,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-between px-4 h-16 border-b" style={{ borderColor: '#2A2420' }}>
         {!collapsed && (
           <span className="text-white font-semibold tracking-widest text-lg" style={{ fontFamily: 'Georgia, serif' }}>
-            {process.env.NEXT_PUBLIC_BRAND_NAME || 'Store'}
+            {process.env.NEXT_PUBLIC_BRAND_NAME || 'Avantara'}
           </span>
         )}
         <button onClick={() => setCollapsed(!collapsed)}

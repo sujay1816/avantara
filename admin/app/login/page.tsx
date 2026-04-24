@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, ArrowRight } from 'lucide-react'
@@ -48,7 +50,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-semibold tracking-widest mb-1" style={{ fontFamily: 'Georgia, serif', color: '#1A1714' }}>
-            {process.env.NEXT_PUBLIC_BRAND_NAME || 'Store'}
+            {process.env.NEXT_PUBLIC_BRAND_NAME || 'Avantara'}
           </h1>
           <p className="text-sm" style={{ color: '#6B6B6B' }}>Admin Panel</p>
         </div>

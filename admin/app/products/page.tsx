@@ -1,4 +1,6 @@
 'use client'
+
+export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import AdminLayout from '@/components/layout/AdminLayout'
 import TopBar from '@/components/layout/TopBar'
@@ -11,14 +13,14 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const getSupabase = () => createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
   )
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data } = await supabase
+      const { data } = await getSupabase()
         .from('products')
         .select('*, categories(label), product_variants(stock)')
         .order('created_at', { ascending: false })
@@ -38,7 +40,7 @@ export default function ProductsPage() {
 
   const deleteProduct = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return
-    await supabase.from('products').delete().eq('id', id)
+    await getSupabase().from('products').delete().eq('id', id)
     setProducts(prev => prev.filter(p => p.id !== id))
   }
 

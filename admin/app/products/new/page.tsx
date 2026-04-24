@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -56,14 +58,14 @@ export default function AddProductPage() {
 
   const [categories, setCategories] = useState<{id: string, label: string, slug: string}[]>([])
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const getSupabase = () => createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
   )
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const { data } = await supabase.from('categories').select('id, slug, label').order('order_index')
+      const { data } = await getSupabase().from('categories').select('id, slug, label').order('order_index')
       if (data) setCategories(data)
     }
     fetchCategories()
@@ -122,7 +124,7 @@ export default function AddProductPage() {
       const categoryData = categories.find(c => c.id === form.categoryId)
       const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now()
 
-      const { data: product, error } = await supabase.from('products').insert({
+      const { data: product, error } = await getSupabase().from('products').insert({
         name: form.name, slug, description: form.description,
         fabric: form.fabric, occasion: form.occasion,
         care_instructions: form.careInstructions, blouse_included: form.blouseIncluded,
@@ -138,10 +140,12 @@ export default function AddProductPage() {
       if (error) throw error
 
       if (form.variants.length > 0) {
-        await supabase.from('product_variants').insert(
-          form.variants.filter(v => v.colour).map(v => ({
-            product_id: product.id, colour: v.colour,
-            colour_hex: v.colourHex, stock: v.stock, sku: v.sku,
+        await getSupabase().from('product_variants').insert(
+          form.variants.filter(v => v.colour && v.colour !== 'custom:').map(v => ({
+            product_id: product.id, 
+            colour: v.colour.startsWith('custom:') ? v.colour.replace('custom:', '') : v.colour,
+            colour_hex: v.colourHex || COLOUR_HEX[v.colour] || '#C9956C', 
+            stock: v.stock, sku: v.sku,
           }))
         )
       }
@@ -149,10 +153,10 @@ export default function AddProductPage() {
       for (let i = 0; i < form.images.length; i++) {
         const file = form.images[i]
         const fileName = `${product.id}/${Date.now()}-${file.name}`
-        const { data: uploadData } = await supabase.storage.from('product-images').upload(fileName, file)
+        const { data: uploadData } = await getSupabase().storage.from('product-images').upload(fileName, file)
         if (uploadData) {
-          const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fileName)
-          await supabase.from('product_images').insert({
+          const { data: { publicUrl } } = getSupabase().storage.from('product-images').getPublicUrl(fileName)
+          await getSupabase().from('product_images').insert({
             product_id: product.id, url: publicUrl,
             alt_text: form.name, is_primary: i === 0, order_index: i,
           })
@@ -360,11 +364,39 @@ export default function AddProductPage() {
                       <div className="grid grid-cols-3 gap-3">
                         <div>
                           <label className={labelClass}>Colour *</label>
-                          <select value={variant.colour} onChange={e => updateVariant(i, 'colour', e.target.value)}
+                          <select value={variant.colour.startsWith('custom:') ? 'custom' : variant.colour} 
+                            onChange={e => {
+                              if (e.target.value === 'custom') {
+                                updateVariant(i, 'colour', 'custom:')
+                              } else {
+                                updateVariant(i, 'colour', e.target.value)
+                              }
+                            }}
                             className={inputClass} style={{ borderColor: '#E5E7EB' }}>
                             <option value="">Select colour</option>
                             {COLOURS.map(c => <option key={c} value={c}>{c}</option>)}
+                            <option value="custom">+ Custom Colour</option>
                           </select>
+                          {variant.colour.startsWith('custom:') && (
+                            <div className="flex gap-2 mt-2">
+                              <input
+                                type="text"
+                                value={variant.colour.replace('custom:', '')}
+                                onChange={e => updateVariant(i, 'colour', 'custom:' + e.target.value)}
+                                placeholder="e.g. Peacock Blue"
+                                className={inputClass}
+                                style={{ borderColor: '#C9956C' }}
+                              />
+                              <input
+                                type="color"
+                                value={variant.colourHex || '#C9956C'}
+                                onChange={e => updateVariant(i, 'colourHex', e.target.value)}
+                                className="h-10 w-12 rounded border cursor-pointer flex-shrink-0"
+                                style={{ borderColor: '#E5E7EB', padding: '2px' }}
+                                title="Pick colour"
+                              />
+                            </div>
+                          )}
                         </div>
                         <div>
                           <label className={labelClass}>Stock</label>
@@ -378,10 +410,16 @@ export default function AddProductPage() {
                             placeholder="e.g. KSS-BL-001" className={inputClass} style={{ borderColor: '#E5E7EB' }} />
                         </div>
                       </div>
-                      {variant.colour && (
+                      {variant.colour && !variant.colour.startsWith('custom:') && (
                         <div className="flex items-center gap-2 mt-2">
-                          <div className="w-4 h-4 rounded-full" style={{ background: COLOUR_HEX[variant.colour] || '#ccc' }} />
+                          <div className="w-4 h-4 rounded-full border" style={{ background: COLOUR_HEX[variant.colour] || variant.colourHex || '#ccc' }} />
                           <span className="text-xs text-gray-500">{variant.colour}</span>
+                        </div>
+                      )}
+                      {variant.colour.startsWith('custom:') && variant.colour.replace('custom:', '') && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="w-4 h-4 rounded-full border" style={{ background: variant.colourHex || '#C9956C' }} />
+                          <span className="text-xs text-gray-500">{variant.colour.replace('custom:', '')} (custom)</span>
                         </div>
                       )}
                     </div>
@@ -443,7 +481,7 @@ export default function AddProductPage() {
                     <p className="text-sm font-semibold text-gray-700 mb-3">Product Summary</p>
                     <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                       <span>Name:</span><span className="font-medium">{form.name || '—'}</span>
-                      <span>Category:</span><span className="font-medium">{CATEGORIES.find(c => c.id === form.categoryId)?.label || '—'}</span>
+                      <span>Category:</span><span className="font-medium">{(categories.length > 0 ? categories : STATIC_CATEGORIES).find(c => c.id === form.categoryId)?.label || '—'}</span>
                       <span>Fabric:</span><span className="font-medium">{form.fabric || '—'}</span>
                       <span>Price:</span><span className="font-medium">{form.originalPrice ? `₹${parseInt(form.originalPrice).toLocaleString('en-IN')}` : '—'}</span>
                       <span>Variants:</span><span className="font-medium">{form.variants.filter(v => v.colour).length} colours</span>
