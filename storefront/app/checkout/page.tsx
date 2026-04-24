@@ -6,6 +6,7 @@ import { Check, ChevronRight, MapPin, CreditCard, ShoppingBag } from 'lucide-rea
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { formatPrice } from '@/lib/config'
+import config from '@/config.json'
 
 type Step = 'address' | 'coupon' | 'payment' | 'confirmation'
 
@@ -41,7 +42,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi'>('upi')
   const [upiId, setUpiId] = useState('')
   const [orderPlaced, setOrderPlaced] = useState(false)
-  const [orderNumber] = useState(`AVT${Date.now().toString().slice(-6)}`)
+  const [orderNumber] = useState(`${config.brand.name.slice(0,3).toUpperCase()}${Date.now().toString().slice(-6)}`)
   const [placingOrder, setPlacingOrder] = useState(false)
 
   const currentStepIndex = STEPS.findIndex(s => s.id === step)
@@ -276,7 +277,7 @@ export default function CheckoutPage() {
                     Order Placed!
                   </h2>
                   <p className="text-sm mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-                    Thank you for shopping with {'{brand}'}.
+                    Thank you for shopping with {config.brand.name}.
                   </p>
                   <p className="text-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>
                     Your order <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>#{orderNumber}</span> has been confirmed.

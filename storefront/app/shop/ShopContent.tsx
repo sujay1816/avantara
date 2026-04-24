@@ -18,7 +18,7 @@ const ALL_PRODUCTS = Array.from({ length: 16 }, (_, i) => ({
   id: `p${i + 1}`,
   name: ['Kanjivaram Silk', 'Banarasi Brocade', 'Chanderi Cotton', 'Pure Georgette', 'Mysore Silk', 'Linen Handloom', 'Organza Delight', 'Bandhani Print', 'Patola Silk', 'Tussar Silk', 'Ikat Cotton', 'Jamdani Muslin', 'Kalamkari', 'Pochampally', 'Sambalpuri', 'Paithani'][i],
   slug: `product-${i + 1}`,
-  brand: 'Avantara',
+  brand: config.brand.name,
   description: 'A beautiful saree crafted with care.',
   fabric: FABRICS[i % FABRICS.length],
   occasion: [OCCASIONS[i % OCCASIONS.length]],

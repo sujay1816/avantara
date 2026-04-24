@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import config from '@/config.json'
 
 type Mode = 'login' | 'signup'
@@ -14,43 +16,52 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ fullName: '', email: '', password: '' })
   const [error, setError] = useState('')
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    await new Promise(r => setTimeout(r, 1000))
-    // TODO: integrate with Supabase auth
+    const supabase = createClient()
+
+    if (mode === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      })
+      if (error) { setError(error.message); setLoading(false); return }
+    } else {
+      const { error } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: { data: { full_name: form.fullName } }
+      })
+      if (error) { setError(error.message); setLoading(false); return }
+    }
+
+    router.push('/')
+    router.refresh()
     setLoading(false)
   }
 
   const handleGoogle = async () => {
-    // TODO: supabase.auth.signInWithOAuth({ provider: 'google' })
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` }
+    })
   }
 
   return (
     <div className="min-h-screen flex" style={{ background: 'var(--color-bg-primary)' }}>
-      {/* Left — brand panel (desktop only) */}
       <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-16 relative overflow-hidden"
         style={{ background: 'var(--color-text-primary)' }}>
-        {/* Decorative 3D orb */}
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
           className="absolute opacity-10"
-          style={{ width: 500, height: 500, borderRadius: '50%', border: '1px solid var(--color-accent)', top: '-20%', left: '-20%' }}
-        />
-        <motion.div
-          animate={{ rotate: -360 }}
-          transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-          className="absolute opacity-5"
-          style={{ width: 400, height: 400, borderRadius: '50%', border: '2px solid white', bottom: '-10%', right: '-10%' }}
-        />
-
+          style={{ width: 500, height: 500, borderRadius: '50%', border: '1px solid var(--color-accent)', top: '-20%', left: '-20%' }} />
         <div className="relative z-10 text-center">
           <Link href="/">
-            <h1 style={{ fontFamily: 'var(--font-heading)', color: 'white' }}
-              className="text-5xl font-light tracking-widest mb-4">
+            <h1 style={{ fontFamily: 'var(--font-heading)', color: 'white' }} className="text-5xl font-light tracking-widest mb-4">
               {config.brand.name}
             </h1>
           </Link>
@@ -65,18 +76,14 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* Right — auth form */}
       <div className="flex-1 flex flex-col items-center justify-center p-8">
-        {/* Mobile logo */}
         <Link href="/" className="lg:hidden mb-8">
-          <span style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text-primary)' }}
-            className="text-3xl font-light tracking-widest">
+          <span style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text-primary)' }} className="text-3xl font-light tracking-widest">
             {config.brand.name}
           </span>
         </Link>
 
         <div className="w-full max-w-md">
-          {/* Tab switcher */}
           <div className="flex border-b mb-8" style={{ borderColor: 'var(--color-border)' }}>
             {(['login', 'signup'] as Mode[]).map(m => (
               <button key={m} onClick={() => { setMode(m); setError('') }}
@@ -84,7 +91,6 @@ export default function AuthPage() {
                 style={{
                   borderBottomColor: mode === m ? 'var(--color-text-primary)' : 'transparent',
                   color: mode === m ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-                  fontFamily: 'var(--font-body)',
                 }}>
                 {m === 'login' ? 'Sign In' : 'Create Account'}
               </button>
@@ -92,39 +98,28 @@ export default function AuthPage() {
           </div>
 
           <AnimatePresence mode="wait">
-            <motion.form
-              key={mode}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              onSubmit={handleSubmit}
-              className="space-y-4"
-            >
+            <motion.form key={mode} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}
+              onSubmit={handleSubmit} className="space-y-4">
               {mode === 'signup' && (
                 <div>
                   <label className="text-xs mb-1 block" style={{ color: 'var(--color-text-secondary)' }}>Full Name</label>
                   <input type="text" required value={form.fullName}
                     onChange={e => setForm(p => ({ ...p, fullName: e.target.value }))}
-                    placeholder="Your full name"
-                    className="input-base" />
+                    placeholder="Your full name" className="input-base" />
                 </div>
               )}
-
               <div>
                 <label className="text-xs mb-1 block" style={{ color: 'var(--color-text-secondary)' }}>Email Address</label>
                 <input type="email" required value={form.email}
                   onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                  placeholder="you@example.com"
-                  className="input-base" />
+                  placeholder="you@example.com" className="input-base" />
               </div>
-
               <div>
                 <div className="flex justify-between mb-1">
                   <label className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Password</label>
                   {mode === 'login' && (
-                    <Link href="/forgot-password" className="text-xs transition-colors"
-                      style={{ color: 'var(--color-accent)' }}>
+                    <Link href="/forgot-password" className="text-xs" style={{ color: 'var(--color-accent)' }}>
                       Forgot password?
                     </Link>
                   )}
@@ -132,20 +127,14 @@ export default function AuthPage() {
                 <div className="relative">
                   <input type={showPassword ? 'text' : 'password'} required value={form.password}
                     onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-                    placeholder="••••••••"
-                    className="input-base pr-10" />
+                    placeholder="••••••••" className="input-base pr-10" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                    style={{ color: 'var(--color-text-secondary)' }}>
+                    className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-secondary)' }}>
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
-
-              {error && (
-                <p className="text-xs" style={{ color: '#C0392B' }}>{error}</p>
-              )}
-
+              {error && <p className="text-xs" style={{ color: '#C0392B' }}>{error}</p>}
               <motion.button type="submit" className="btn-primary w-full justify-center"
                 whileTap={{ scale: 0.98 }} disabled={loading}>
                 {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
@@ -154,20 +143,13 @@ export default function AuthPage() {
             </motion.form>
           </AnimatePresence>
 
-          {/* Divider */}
           <div className="flex items-center gap-4 my-6">
             <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
             <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>or continue with</span>
             <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
           </div>
 
-          {/* Google OAuth */}
-          <motion.button
-            onClick={handleGoogle}
-            className="btn-outline w-full justify-center"
-            whileTap={{ scale: 0.98 }}
-          >
-            {/* Google icon */}
+          <motion.button onClick={handleGoogle} className="btn-outline w-full justify-center" whileTap={{ scale: 0.98 }}>
             <svg width="16" height="16" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>

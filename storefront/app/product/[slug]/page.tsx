@@ -10,13 +10,14 @@ import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import ProductCard from '@/components/product/ProductCard'
 import { formatPrice } from '@/lib/config'
+import config from '@/config.json'
 
 // Placeholder product — replace with Supabase fetch by slug
 const PRODUCT = {
   id: 'p1',
   name: 'Kanjivaram Pure Silk Saree',
   slug: 'kanjivaram-pure-silk-saree',
-  brand: 'Avantara',
+  brand: config.brand.name,
   description: 'A masterpiece of South Indian weaving tradition, this Kanjivaram pure silk saree features intricate zari work and a rich temple border. Hand-woven by master artisans in Kanchipuram, each saree takes over 10 days to complete. The lustrous silk catches the light beautifully, making it perfect for weddings and grand occasions.',
   fabric: 'Pure Silk',
   occasion: ['Wedding', 'Festive', 'Religious'],
@@ -63,7 +64,7 @@ const REVIEWS = [
 
 const RELATED_PRODUCTS = Array.from({ length: 4 }, (_, i) => ({
   id: `rp${i}`, name: ['Mysore Silk', 'Banarasi Brocade', 'Pure Georgette', 'Chanderi Cotton'][i],
-  slug: `related-${i}`, brand: 'Avantara', description: 'Beautiful saree.', fabric: ['Silk', 'Brocade', 'Georgette', 'Cotton'][i],
+  slug: `related-${i}`, brand: config.brand.name, description: 'Beautiful saree.', fabric: ['Silk', 'Brocade', 'Georgette', 'Cotton'][i],
   occasion: ['Wedding'], careInstructions: 'Dry clean', blouseIncluded: true, length: 5.5,
   category: 'silk', categorySlug: 'silk-sarees',
   originalPrice: [9999, 13499, 5999, 3999][i], salePrice: null, discountPercent: null,

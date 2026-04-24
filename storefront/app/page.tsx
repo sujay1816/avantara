@@ -23,7 +23,7 @@ const PLACEHOLDER_PRODUCTS = Array.from({ length: 8 }, (_, i) => ({
   id: `p${i + 1}`,
   name: ['Kanjivaram Silk Saree', 'Banarasi Brocade', 'Chanderi Cotton', 'Pure Georgette', 'Mysore Silk', 'Linen Saree', 'Organza Delight', 'Bandhani Print'][i],
   slug: `product-${i + 1}`,
-  brand: 'Avantara',
+  brand: config.brand.name,
   description: 'A timeless saree crafted with exceptional attention to detail.',
   fabric: ['Silk', 'Brocade', 'Cotton', 'Georgette', 'Silk', 'Linen', 'Organza', 'Cotton'][i],
   occasion: ['Wedding', 'Festive'],
@@ -184,7 +184,7 @@ export default function HomePage() {
         style={{ background: 'var(--color-text-primary)' }}>
         <div className="page-container">
           <p className="text-xs tracking-widest uppercase mb-4" style={{ color: 'var(--color-accent)' }}>
-            The Avantara Promise
+            {config.brand.name} Promise
           </p>
           <h2 className="text-4xl md:text-5xl font-light text-white mb-6"
             style={{ fontFamily: 'var(--font-heading)' }}>
