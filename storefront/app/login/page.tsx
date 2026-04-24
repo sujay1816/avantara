@@ -46,9 +46,14 @@ export default function AuthPage() {
 
   const handleGoogle = async () => {
     const supabase = createClient()
+    // Prefer NEXT_PUBLIC_APP_URL so OAuth never lands on localhost in production.
+    // Falls back to window.location.origin for local dev / preview deployments.
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') ||
+      window.location.origin
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` }
+      options: { redirectTo: `${baseUrl}/auth/callback` }
     })
   }
 

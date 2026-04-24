@@ -1,9 +1,9 @@
 {
   "brand": {
-    "name": "Avantara",
+    "name": "Satika",
     "tagline": "Draped in Elegance",
     "logoType": "both",
-    "logoText": "Avantara",
+    "logoText": "Satika",
     "logoImageUrl": "/images/logo.png",
     "faviconUrl": "/images/favicon.ico"
   },
@@ -55,7 +55,7 @@
 
   "contact": {
     "whatsappNumber": "+919999999999",
-    "whatsappMessage": "Hi! I need help with my order on Avantara.",
+    "whatsappMessage": "Hi! I need help with my order on Satika.",
     "supportEmail": "support@avantara.in",
     "businessEmail": "hello@avantara.in"
   },
@@ -69,7 +69,7 @@
 
   "footer": {
     "showNewsletter": true,
-    "newsletterHeading": "Join the Avantara Circle",
+    "newsletterHeading": "Join the Satika Circle",
     "newsletterSubtext": "Get early access to new arrivals, exclusive offers and styling tips.",
     "links": [
       {
@@ -100,11 +100,11 @@
         ]
       }
     ],
-    "copyrightText": "© 2025 Avantara. All rights reserved."
+    "copyrightText": "© 2025 Satika. All rights reserved."
   },
 
   "seo": {
-    "defaultTitle": "Avantara — Draped in Elegance",
+    "defaultTitle": "Satika — Draped in Elegance",
     "defaultDescription": "Shop the finest sarees online. Silk, Cotton, Designer, Bridal and Casual sarees for every occasion.",
     "defaultKeywords": "sarees, silk sarees, cotton sarees, bridal sarees, designer sarees, buy sarees online",
     "ogImageUrl": "/images/og-image.jpg",
@@ -118,7 +118,7 @@
   },
 
   "gst": {
-    "businessName": "Avantara Fashion Pvt Ltd",
+    "businessName": "Satika Fashion Pvt Ltd",
     "gstin": "YOUR_GSTIN_HERE",
     "address": "Your Business Address Here",
     "defaultGstRate": 5

@@ -40,3 +40,6 @@ next-env.d.ts
 
 # Backup files
 *.bak
+
+# Handover / internal docs with credentials — never commit
+CLAUDE-HANDOVER.md
