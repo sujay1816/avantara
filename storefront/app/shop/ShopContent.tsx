@@ -8,40 +8,11 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import ProductCard from '@/components/product/ProductCard'
-import config from '@/config.json'
+import type { Product } from '@/types'
 
 const COLOURS = ['Royal Blue', 'Crimson Red', 'Emerald Green', 'Deep Purple', 'Ivory White', 'Rose Pink', 'Midnight Black', 'Golden Yellow']
 const OCCASIONS = ['Wedding', 'Festive', 'Casual', 'Office', 'Party', 'Religious']
 const FABRICS = ['Silk', 'Cotton', 'Georgette', 'Chiffon', 'Linen', 'Organza', 'Net', 'Crepe']
-
-const ALL_PRODUCTS = Array.from({ length: 16 }, (_, i) => ({
-  id: `p${i + 1}`,
-  name: ['Kanjivaram Silk', 'Banarasi Brocade', 'Chanderi Cotton', 'Pure Georgette', 'Mysore Silk', 'Linen Handloom', 'Organza Delight', 'Bandhani Print', 'Patola Silk', 'Tussar Silk', 'Ikat Cotton', 'Jamdani Muslin', 'Kalamkari', 'Pochampally', 'Sambalpuri', 'Paithani'][i],
-  slug: `product-${i + 1}`,
-  brand: config.brand.name,
-  description: 'A beautiful saree crafted with care.',
-  fabric: FABRICS[i % FABRICS.length],
-  occasion: [OCCASIONS[i % OCCASIONS.length]],
-  careInstructions: 'Dry clean only',
-  blouseIncluded: i % 2 === 0,
-  length: 5.5,
-  category: config.categories[i % config.categories.length].id,
-  categorySlug: config.categories[i % config.categories.length].slug,
-  originalPrice: [8999, 12499, 3499, 5999, 9999, 2999, 7499, 4299, 15999, 6499, 3999, 8499, 4999, 5499, 6999, 11999][i],
-  salePrice: i % 4 === 0 ? Math.round([8999, 12499, 3499, 5999, 9999, 2999, 7499, 4299, 15999, 6499, 3999, 8499, 4999, 5499, 6999, 11999][i] * 0.8) : null,
-  discountPercent: i % 4 === 0 ? 20 : null,
-  saleStartDate: null, saleEndDate: null,
-  gstRate: 5, images: [],
-  variants: [{ id: `v${i}`, colour: COLOURS[i % COLOURS.length], colourHex: '#C9956C', stock: i === 5 ? 0 : 3, sku: `SKU-${i}` }],
-  totalStock: i === 5 ? 0 : 5,
-  isOutOfStock: i === 5,
-  isNew: i < 4, isFeatured: i < 6, isBestseller: i >= 8,
-  customFields: {},
-  averageRating: 3.5 + (i % 3) * 0.5,
-  reviewCount: i * 3,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-}))
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest First' },
@@ -51,7 +22,11 @@ const SORT_OPTIONS = [
   { value: 'discount', label: 'Best Discount' },
 ]
 
-export default function ShopContent() {
+interface ShopContentProps {
+  products: Product[]
+}
+
+export default function ShopContent({ products }: ShopContentProps) {
   const searchParams = useSearchParams()
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [selectedColours, setSelectedColours] = useState<string[]>([])
@@ -66,7 +41,7 @@ export default function ShopContent() {
   const toggleWishlist = (id: string) =>
     setWishlist(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id])
 
-  const filteredProducts = ALL_PRODUCTS.filter(p => {
+  const filteredProducts = products.filter(p => {
     if (selectedColours.length && !p.variants.some(v => selectedColours.includes(v.colour))) return false
     if (selectedOccasions.length && !p.occasion.some(o => selectedOccasions.includes(o))) return false
     if (selectedFabrics.length && !selectedFabrics.includes(p.fabric)) return false
@@ -171,6 +146,26 @@ export default function ShopContent() {
     </div>
   )
 
+  // ── Empty state when no products in DB yet ──────────────────────────────────
+  if (products.length === 0) {
+    return (
+      <>
+        <Navbar />
+        <div className="page-container py-20 text-center">
+          <div className="text-5xl mb-4">🪡</div>
+          <h2 className="text-2xl mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
+            No products yet
+          </h2>
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            Products will appear here once they are added from the admin panel.
+          </p>
+        </div>
+        <Footer />
+        <WhatsAppButton />
+      </>
+    )
+  }
+
   return (
     <>
       <Navbar />
@@ -198,7 +193,7 @@ export default function ShopContent() {
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-20">
-                <div className="text-5xl mb-4">🥻</div>
+                <div className="text-5xl mb-4">🪡</div>
                 <h3 className="text-xl mb-2" style={{ fontFamily: 'var(--font-heading)' }}>No sarees found</h3>
                 <p className="text-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>Try adjusting your filters.</p>
                 <button onClick={clearFilters} className="btn-primary">Clear All Filters</button>
@@ -209,7 +204,7 @@ export default function ShopContent() {
                 variants={{ visible: { transition: { staggerChildren: 0.05 } } }}>
                 {filteredProducts.map(product => (
                   <motion.div key={product.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <ProductCard product={product as any} isWishlisted={wishlist.includes(product.id)} onToggleWishlist={toggleWishlist} />
+                    <ProductCard product={product} isWishlisted={wishlist.includes(product.id)} onToggleWishlist={toggleWishlist} />
                   </motion.div>
                 ))}
               </motion.div>
