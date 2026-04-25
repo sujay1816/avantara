@@ -1,8 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import type { Product, ProductImage, ProductVariant } from '@/types'
-
-// ── DB row → TypeScript type mappers ─────────────────────────────────────────
-
+ 
+const getSupabase = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+ 
 function mapImage(row: any): ProductImage {
   return {
     id: row.id,
@@ -12,7 +15,7 @@ function mapImage(row: any): ProductImage {
     order: row.order_index,
   }
 }
-
+ 
 function mapVariant(row: any): ProductVariant {
   return {
     id: row.id,
@@ -22,14 +25,14 @@ function mapVariant(row: any): ProductVariant {
     sku: row.sku,
   }
 }
-
+ 
 function mapProduct(row: any): Product {
   const variants: ProductVariant[] = (row.product_variants || []).map(mapVariant)
   const images: ProductImage[] = (row.product_images || [])
     .sort((a: any, b: any) => a.order_index - b.order_index)
     .map(mapImage)
   const totalStock = variants.reduce((sum, v) => sum + v.stock, 0)
-
+ 
   return {
     id: row.id,
     name: row.name,
@@ -63,12 +66,10 @@ function mapProduct(row: any): Product {
     updatedAt: row.updated_at,
   }
 }
-
-// ── Query: all active products for shop page ──────────────────────────────────
-
+ 
 export async function getProducts(): Promise<Product[]> {
-  const supabase = await createClient()
-
+  const supabase = getSupabase()
+ 
   const { data, error } = await supabase
     .from('products')
     .select(`
@@ -79,20 +80,18 @@ export async function getProducts(): Promise<Product[]> {
     `)
     .eq('is_active', true)
     .order('created_at', { ascending: false })
-
+ 
   if (error) {
     console.error('Error fetching products:', error.message)
     return []
   }
-
+ 
   return (data || []).map(mapProduct)
 }
-
-// ── Query: single product by slug for detail page ─────────────────────────────
-
+ 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const supabase = await createClient()
-
+  const supabase = getSupabase()
+ 
   const { data, error } = await supabase
     .from('products')
     .select(`
@@ -104,29 +103,26 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     .eq('slug', slug)
     .eq('is_active', true)
     .single()
-
+ 
   if (error || !data) {
     console.error('Error fetching product by slug:', error?.message)
     return null
   }
-
+ 
   return mapProduct(data)
 }
-
-// ── Query: related products (same category, exclude current) ──────────────────
-
+ 
 export async function getRelatedProducts(categorySlug: string, excludeSlug: string): Promise<Product[]> {
-  const supabase = await createClient()
-
-  // First get the category id from slug
+  const supabase = getSupabase()
+ 
   const { data: category } = await supabase
     .from('categories')
     .select('id')
     .eq('slug', categorySlug)
     .single()
-
+ 
   if (!category) return []
-
+ 
   const { data, error } = await supabase
     .from('products')
     .select(`
@@ -139,20 +135,18 @@ export async function getRelatedProducts(categorySlug: string, excludeSlug: stri
     .eq('is_active', true)
     .neq('slug', excludeSlug)
     .limit(4)
-
+ 
   if (error) {
     console.error('Error fetching related products:', error.message)
     return []
   }
-
+ 
   return (data || []).map(mapProduct)
 }
-
-// ── Query: reviews for a product ──────────────────────────────────────────────
-
+ 
 export async function getProductReviews(productId: string) {
-  const supabase = await createClient()
-
+  const supabase = getSupabase()
+ 
   const { data, error } = await supabase
     .from('reviews')
     .select(`
@@ -161,12 +155,12 @@ export async function getProductReviews(productId: string) {
     `)
     .eq('product_id', productId)
     .order('created_at', { ascending: false })
-
+ 
   if (error) {
     console.error('Error fetching reviews:', error.message)
     return []
   }
-
+ 
   return (data || []).map((r: any) => ({
     id: r.id,
     productId: productId,
@@ -179,3 +173,4 @@ export async function getProductReviews(productId: string) {
     createdAt: r.created_at,
   }))
 }
+ 
